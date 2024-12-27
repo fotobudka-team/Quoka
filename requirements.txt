@@ -1,0 +1,8 @@
+osmnx==2.0.0
+matplotlib==3.9.4
+scipy==1.13.1
+geopy==2.4.1
+folium==0.19.2
+scikit-learn==1.6.0
+urllib3==1.26.6
+pandas
