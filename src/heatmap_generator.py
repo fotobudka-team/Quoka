@@ -49,3 +49,13 @@ def normalize_data(data, weights):
         data['final'] += data[f'normalized_{key}']
     return data
 
+def add_scale(data, scales, max_factor=5):
+    """
+    Dodaje skalę do danych.
+    """
+    data['scaled'] = 0
+    for column, scale in scales.items():
+        data[f'scaled {column}'] = data[f'distance_to_{column}'] / scale
+        # data[f'scaled {column}'] = data[f'scaled {column}'].apply(lambda x: max_factor if x > max_factor else x)
+        data['scaled'] += data[f'scaled {column}']
+    return data
