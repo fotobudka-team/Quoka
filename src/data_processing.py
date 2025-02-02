@@ -1,66 +1,41 @@
 import osmnx as ox
+import h3
+import numpy as np
+from shapely.ops import unary_union
 
-def get_coords(row):
-    if row.geometry.geom_type == 'Point':
-        return (row.geometry.y, row.geometry.x)
-    elif row.geometry.geom_type == 'Polygon':
-        # Zewnętrzny pierścień
-        coords = [(coord[1], coord[0]) for coord in row.geometry.exterior.coords]
-        
-        # Wewnętrzne pierścienie (jeśli istnieją)
-        for interior in row.geometry.interiors:
-            coords.extend([(coord[1], coord[0]) for coord in interior.coords])
-        return coords
-    elif row.geometry.geom_type == 'MultiPolygon':
-        # Zewnętrzne pierścienie we wszystkich wielokątach
-        coords = []
-        for polygon in row.geometry.geoms:
-            # Zewnętrzny pierścień
-            coords.extend([(coord[1], coord[0]) for coord in polygon.exterior.coords])
-            
-            # Wewnętrzne pierścienie, jeśli istnieją
-            for interior in polygon.interiors:
-                coords.extend([(coord[1], coord[0]) for coord in interior.coords])
-        return coords
-    return None
+def get_city_boundary(city):
+    city_gdf = ox.geocode_to_gdf(city)
+    return city_gdf
 
-def get_data(city, tags):
-    """
-    Pobiera dane dla podanych tagów.
-    """
-    data = {}
-    for tag in tags:
-        if tag == "shop":
-            query = {"shop": "supermarket"}
-        elif tag == "hospital":
-            query = {
-                "amenity": ["hospital", "clinic"],
-                "healthcare": "clinic"
-            }
-        elif tag == "park":
-            query = {
-                "leisure": ["park", "nature_reserve", "garden"],
-                "landuse": ["recreation_ground", "forest", "grassland"],
-                "boundary": "national_park"
-            }
-        elif tag == "station":
-            query = {
-                "public_transport": ["stop_position", "platform"],
-                "highway": "bus_stop",
-                "railway": ["tram_stop", "station"],
-                "amenity": "bus_station"
-            }
-        features = ox.features.features_from_place(city, query)
 
-        features_coords = features.apply(get_coords, axis=1)
-        features_coords = [coord for coord in features_coords if coord is not None]
+def generate_h3_grid(city_gdf, resolution=9):
+    city_polygon = city_gdf.geometry.iloc[0]
+    hexagons = h3.geo_to_cells(city_polygon, resolution)
+    return hexagons
 
-        f_coords = []
-        for sublist in features_coords:
-            if isinstance(sublist, list): 
-                for coord in sublist: 
-                    f_coords.append(coord)  
-            else:  
-                f_coords.append(sublist)
-        data[tag] = f_coords
-    return data
+
+def get_osm_data(city_name, tags):
+    # Pobranie granic miasta
+    gdf = ox.geocode_to_gdf(city_name)
+
+    # Pobranie bounding boxa (min/max współrzędne)
+    minx, miny, maxx, maxy = gdf.total_bounds
+
+    # Obliczamy maksymalną rozpiętość w stopniach geograficznych
+    max_span = max(maxx - minx, maxy - miny)
+
+    # Rozszerzamy bounding box o tę wartość (~1° = 111 km)
+    buffered_geometry = gdf.to_crs(epsg=3857).buffer(max_span * 111000 / 2).to_crs(epsg=4326)
+
+    # Pobranie skorygowanego wielokąta
+    expanded_polygon = unary_union(buffered_geometry.geometry)
+
+    # Pobranie danych OSM
+    features = ox.features.features_from_polygon(expanded_polygon, tags)
+    features = features.to_crs(epsg=3857)
+
+    # Ekstrakcja współrzędnych centroidów
+    features_coords = features.geometry.centroid.to_crs(epsg=4326)
+    features_coords = features_coords.apply(lambda p: (p.y, p.x)).tolist()
+
+    return np.array(features_coords)

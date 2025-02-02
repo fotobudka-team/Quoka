@@ -1,19 +1,61 @@
-from data_processing import get_data
-from heatmap_generator import create_grid, calculate_distances, normalize_data
-from visualization import create_visualization
+from data_processing import get_city_boundary, generate_h3_grid, get_osm_data
+from heatmap_generator import calculate_nearest_distance, add_scale
+from create_files import create_geojson
+import pandas as pd
 
-CITY = "Wrocław, Polska"
+CITY = "Wrocław Polska"
 
-# Pobranie danych
-data_sources = ["shop", "hospital", "park", "station"]
-data = get_data(CITY, data_sources)
+SCALES = {
+    "shop": 1000,
+    "hospital": 1000,
+    "park": 1000,
+    "station": 1000
+}
 
-grid = create_grid(CITY)
-heatmap_data = calculate_distances(data, grid)
+CRITERIA_MAPPING = {
+    "shop": {"shop": "supermarket"},
+    "hospital": {"amenity": ["hospital", "clinic"], "healthcare": "clinic"},
+    "park": {
+        "leisure": ["park", "nature_reserve", "garden"],
+        "landuse": ["recreation_ground", "forest", "grassland"],
+        "boundary": "national_park"
+    },
+    "station": {
+        "public_transport": ["stop_position", "platform"],
+        "highway": "bus_stop",
+        "railway": ["tram_stop", "station"],
+        "amenity": "bus_station"
+    }
+}
 
-# Normalizacja danych z przypisaniem wag
-weights = {"shop": 0.25, "hospital": 0.25, "park": 0.25, "station": 0.25}
-normalized_data = normalize_data(heatmap_data, weights)
+def process_data(CITY):
+    results = []
+    distances_dict = {}
+    for tag, query in CRITERIA_MAPPING.items():
+        city_gdf = get_city_boundary(CITY)
+        hexagons = generate_h3_grid(city_gdf)
+        objects = get_osm_data(CITY, query)
+        distances = calculate_nearest_distance(hexagons, objects)
+        distances_dict[tag] = distances
 
-# Tworzenie wizualizacji
-create_visualization(normalized_data, "./data/heatmap_combined.png", "./data/heatmap_combined.html", CITY)
+        # Tworzenie DataFrame z wynikami
+        data = pd.DataFrame({
+            'h3_index': list(distances.keys()),
+            f'distance_to_{tag}': list(distances.values())
+        })
+        results.append(data)
+
+    # Łączenie danych z wielu kryteriów
+    merged_data = pd.concat(results, axis=1).loc[:, ~pd.concat(results, axis=1).columns.duplicated()]
+    return merged_data, distances_dict
+
+def change_scales(merged_data, distances_dict, SCALES):
+    scaled_data = add_scale(merged_data, SCALES)
+
+    hexagons = scaled_data['h3_index'].tolist()
+    distances = {row['h3_index']: row['scaled'] for _, row in scaled_data.iterrows()}
+    create_geojson(hexagons, distances_dict, distances, filename="final_scaled_data.geojson")
+
+if __name__ == "__main__":
+    merged_data, distances_dict = process_data(CITY)
+    change_scales(merged_data, distances_dict, SCALES)

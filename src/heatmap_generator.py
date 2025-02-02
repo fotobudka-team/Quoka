@@ -1,61 +1,43 @@
-import numpy as np
-import pandas as pd
+import h3
 from scipy.spatial import cKDTree
-from geopy.distance import geodesic
-from shapely.geometry import Point
-import osmnx as ox
+import pandas as pd
+import numpy as np
 
-def create_grid(city, resolution=0.0005):
-    """
-    Tworzy siatkę punktów dla podanego obszaru.
-    """
-    city_boundary = ox.geocoder.geocode_to_gdf(city)
-    city_polygon = city_boundary.geometry.iloc[0]
-    min_lon, min_lat, max_lon, max_lat = city_polygon.bounds
-    lons = np.arange(min_lon, max_lon, resolution)
-    lats = np.arange(min_lat, max_lat, resolution)
-    lons = np.array([round(lon, 5) for lon in lons])
-    lats = np.array([round(lat, 5) for lat in lats])
-    grid_points = [(lon, lat) for lon in lons for lat in lats if city_polygon.contains(Point(lon, lat))]
-    filtered_points = np.array([point for point in grid_points if city_polygon.contains(Point(point))])
-    return filtered_points
+def calculate_nearest_distance(hexagons, objects):
+    distances = {}
+    if len(objects) == 0:
+        return {h: None for h in hexagons}
 
-def get_nearest_distance(lat, lon, data_coords, tree):
-    _, index = tree.query((lat, lon))
-    nearest_lat, nearest_lon = data_coords[index]
-    accurate_distance = geodesic((lat, lon), (nearest_lat, nearest_lon)).meters
-    return round(accurate_distance, 2)
+    tree = cKDTree(objects)
 
+    for h in hexagons:
+        lat, lon = h3.cell_to_latlng(h)
+        distance, _ = tree.query([lat, lon], k=1)
+        distances[h] = round(distance * 111000, 0)  # Przeliczenie na metry
+    return distances
 
-def calculate_distances(data, grid_points):
+def add_scale(data, scales):
     """
-    Oblicza odległości dla punktów względem siatki i zwraca wyniki jako DataFrame.
-    """
-    grid_df = pd.DataFrame(grid_points, columns=['lon', 'lat'])  # Tworzenie DataFrame dla punktów siatki
-    for key, df in data.items():
-        tree = cKDTree(df)  # Tworzenie drzewa wyszukiwania
-        grid_df[f'distance_to_{key}'] = grid_df.apply(
-            lambda row: get_nearest_distance(row['lat'], row['lon'], df, tree), axis=1
-        )
-    return grid_df
-
-def normalize_data(data, weights):
-    """
-    Normalizuje dane i przypisuje wagi.
-    """
-    data['final'] = 0
-    for key, weight in weights.items():
-        data[f'normalized_{key}'] = data[f'distance_to_{key}'] / data[f'distance_to_{key}'].max() * weight
-        data['final'] += data[f'normalized_{key}']
-    return data
-
-def add_scale(data, scales, max_factor=5):
-    """
-    Dodaje skalę do danych.
+    Dodaje skalę do danych, a następnie skaluje wartości 'scaled'
+    na przedział 1-5 przy użyciu podziału kwantylowego (quantize).
     """
     data['scaled'] = 0
+
+    # Obliczanie wartości skalowanych dla każdej kolumny
     for column, scale in scales.items():
-        data[f'scaled {column}'] = data[f'distance_to_{column}'] / scale
-        # data[f'scaled {column}'] = data[f'scaled {column}'].apply(lambda x: max_factor if x > max_factor else x)
-        data['scaled'] += data[f'scaled {column}']
+        data[f'scaled_{column}'] = data[f'distance_to_{column}'] / scale
+        data[f'scaled_{column}'] = np.where(data[f'scaled_{column}'] < 1, 0, data[f'scaled_{column}'])
+        data['scaled'] += data[f'scaled_{column}']
+
+    # Filtracja wartości > 0
+    valid_values = data.loc[data['scaled'] > 0, 'scaled']
+
+    if not valid_values.empty:
+        # Kwantylowy podział na 5 przedziałów
+        quantized_values = pd.qcut(valid_values, 5, labels=[1, 2, 3, 4, 5]).astype(int)
+        data.loc[valid_values.index, 'scaled'] = quantized_values
+
+    # Konwersja wartości na liczby całkowite
+    data['scaled'] = data['scaled'].astype(int)
+
     return data
