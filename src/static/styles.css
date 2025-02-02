@@ -1,0 +1,86 @@
+body {
+    display: flex;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.map-container {
+    width: 80%; /* 80% szerokości dla mapy */
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.controls {
+    width: 20%; /* 20% szerokości dla paska */
+    background: #f4f4f4;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 2;
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.control-group input[type="number"], 
+.control-group input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.control-group .toggle {
+    display: flex;
+    align-items: center;
+}
+
+.toggle input {
+    margin-right: 10px;
+}
+
+.maplibregl-map > div:last-child {
+    display: none;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 100px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+.category-group {
+    margin-bottom: 30px;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+}
+
+.category-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}

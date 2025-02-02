@@ -6,26 +6,35 @@ import pandas as pd
 CITY = "Wrocław Polska"
 
 SCALES = {
-    "shop": 1000,
+    "shop": 500,
+    "mall": 2000,
     "hospital": 1000,
-    "park": 1000,
-    "station": 1000
+    "school": 3000, 
+    "kindergarten": 1000,
+    "park": 500,
+    "station": 300,
+    "police": 1000,
+    "sport": 1000,
+    "post": 500,
+    "railway_station": 3000,
+    "restaurant": 1000,
+    "entertainment": 3000
 }
 
 CRITERIA_MAPPING = {
     "shop": {"shop": "supermarket"},
-    "hospital": {"amenity": ["hospital", "clinic"], "healthcare": "clinic"},
-    "park": {
-        "leisure": ["park", "nature_reserve", "garden"],
-        "landuse": ["recreation_ground", "forest", "grassland"],
-        "boundary": "national_park"
-    },
-    "station": {
-        "public_transport": ["stop_position", "platform"],
-        "highway": "bus_stop",
-        "railway": ["tram_stop", "station"],
-        "amenity": "bus_station"
-    }
+    "mall":{"shop": "mall"},
+    "hospital": {"amenity": ["hospital", "clinic", "doctors"]},
+    "school": {"amenity": "school"},
+    "kindergarten": {"amenity": ["kindergarten", "nursery"]},
+    "park": {"leisure": "park", "landuse": "forest"},
+    "station": {"highway": "bus_stop", "railway": "tram_stop"},
+    "police": {"amenity": "police"},
+    "sport": {"leisure": ["fitness_centre", "sports_centre", "swimming_pool"]},
+    "post": {"amenity": ["post_office", "parcel_locker"]},
+    "railway_station": {"railway": "station"},
+    "restaurant": {"amenity": "restaurant"},
+    "entertainment": {"amenity": ["cinema", "theatre"]}
 }
 
 def process_data(CITY):
