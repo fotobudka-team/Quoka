@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Application</title>
+    <style>
+        body {display: flex; margin: 0; font-family: Arial, sans-serif; }
+        .map-container { flex: 5; height: 100vh; overflow: hidden; }
+        .controls { flex: 1; background: #f4f4f4; padding: 20px; box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); overflow-y: auto; }
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; }
+        .control-group input[type="number"], .control-group input[type="text"] { width: 100%; padding: 5px; margin-bottom: 5px; }
+        .control-group .toggle { display: flex; align-items: center; }
+        .toggle input { margin-right: 10px; }
+        .maplibregl-map > div:last-child {display: none;}
+        button { display: block; width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <iframe src="/map" frameborder="0" width="100%" height="100%"></iframe>
+    </div>
+    <div class="controls">
+        <form method="POST">
+            <div class="control-group">
+                <label for="city_name">City Name</label>
+                <input type="text" name="city_name" id="city_name" placeholder="Enter city name" 
+                       value="{{ request.form.get('city_name', 'Wrocław, Polska') }}">
+            </div>
+
+            <div class="control-group">
+                <label for="shop_distance">Shop Distance (m)</label>
+                <div class="toggle">
+                    <input type="checkbox" name="shop_enabled" id="shop_enabled">
+                    <input type="number" name="shop_distance" id="shop_distance">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="hospital_distance">Hospital Distance (m)</label>
+                <div class="toggle">
+                    <input type="checkbox" name="hospital_enabled" id="hospital_enabled">
+                    <input type="number" name="hospital_distance" id="hospital_distance">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="park_distance">Park Distance (m)</label>
+                <div class="toggle">
+                    <input type="checkbox" name="park_enabled" id="park_enabled">
+                    <input type="number" name="park_distance" id="park_distance">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="station_distance">Station Distance (m)</label>
+                <div class="toggle">
+                    <input type="checkbox" name="station_enabled" id="station_enabled">
+                    <input type="number" name="station_distance" id="station_distance">
+                </div>
+            </div>
+
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Список полей
+            const fields = [
+                { id: "shop_distance", checkbox: "shop_enabled" },
+                { id: "hospital_distance", checkbox: "hospital_enabled" },
+                { id: "park_distance", checkbox: "park_enabled" },
+                { id: "station_distance", checkbox: "station_enabled" }
+            ];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const checkbox = document.getElementById(field.checkbox);
+
+                const savedValue = localStorage.getItem(field.id);
+                const savedChecked = localStorage.getItem(field.checkbox);
+
+                input.value = savedValue !== null ? savedValue : 1000;
+                checkbox.checked = savedChecked !== null ? JSON.parse(savedChecked) : true;
+
+                input.addEventListener("input", () => {
+                    localStorage.setItem(field.id, input.value);
+                });
+
+                checkbox.addEventListener("change", () => {
+                    localStorage.setItem(field.checkbox, checkbox.checked);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
