@@ -6,3 +6,5 @@ folium==0.19.2
 scikit-learn==1.6.0
 urllib3==1.26.6
 pandas
+flask
+keplergl
