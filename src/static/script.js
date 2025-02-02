@@ -27,15 +27,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const savedValue = localStorage.getItem(`${field}_distance`);
         const savedChecked = localStorage.getItem(`${field}_enabled`);
 
-        input.value = savedValue !== null ? savedValue : defaultScales[`${field}_distance`];
-        checkbox.checked = savedChecked !== null ? JSON.parse(savedChecked) : true;
-
-        input.addEventListener("input", () => {
-            localStorage.setItem(`${field}_distance`, input.value);
-        });
-
-        checkbox.addEventListener("change", () => {
-            localStorage.setItem(`${field}_enabled`, checkbox.checked);
-        });
+        if (input && checkbox) {
+            input.value = savedValue !== null ? Number(savedValue) : defaultScales[`${field}_distance`];
+            checkbox.checked = savedChecked !== null ? JSON.parse(savedChecked) : true;
+        
+            input.addEventListener("input", () => {
+                localStorage.setItem(`${field}_distance`, input.value);
+            });
+        
+            checkbox.addEventListener("change", () => {
+                localStorage.setItem(`${field}_enabled`, checkbox.checked);
+            });
+        }        
     });
+
 });
+
+
+
+
+

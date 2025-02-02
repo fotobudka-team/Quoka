@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="map-container">
-        <iframe src="/map" frameborder="0" width="100%" height="100%"></iframe>
+        <iframe id="map" src="/map" frameborder="0" width="100%" height="100%"></iframe>
     </div>
     <div class="controls">
         <form method="POST">
@@ -50,7 +50,7 @@
                 <div class="category-title">Education</div>
 
                 <div class="control-group">
-                    <label for="scool_distance">School Distance (m)</label>
+                    <label for="school_distance">School Distance (m)</label>
                     <div class="toggle">
                         <input type="checkbox" name="school_enabled" id="school_enabled">
                         <input type="number" name="school_distance" id="school_distance">
@@ -150,5 +150,28 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Opóźnienie w celu załadowania iframe
+            setTimeout(() => {
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer.style.display = 'block';
+                    mapContainer.style.width = '100%';
+                    mapContainer.style.height = '100vh';
+
+                    if (window.kepler) {
+                        console.log("handleResize");
+                        window.kepler.handleResize();
+                    }
+                } else {
+                    console.error("Element o id 'map' nie został znaleziony.");
+                }
+
+                window.dispatchEvent(new Event('resize'));
+
+            }, 500);  // 0.5-sekundowe opóźnienie na załadowanie iframe
+        });
+    </script>
 </body>
 </html>
