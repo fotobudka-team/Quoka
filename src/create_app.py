@@ -20,9 +20,9 @@ def map_view():
                                  "distance_to_hospital", "distance_to_police", 
                                  "distance_to_station", "distance_to_railway_station", 
                                  "distance_to_park", "distance_to_sport", 
-                                 "distance_to_restaurant", "distance_to_entertainment"]]},
-        height=873,
-        weight=1092)
+                                 "distance_to_restaurant", "distance_to_entertainment"]]},)
+        # height=873,
+        # weight=1092)
     
     _map.config = config
     return _map._repr_html_()
