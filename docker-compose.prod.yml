@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: quoka_app_prod
+    volumes:
+      - data:/app/data
     ports:
       - "5000:5000"
 
