@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request
 from keplergl import KeplerGl
-from main import process_data, SCALES
-from heatmap_generator import add_scale
-from visualization import city_changed, get_coordinates
+
 from config import config
+from heatmap_generator import add_scale
+from main import SCALES, process_data
+from visualization import city_changed, get_coordinates
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 
@@ -110,6 +111,3 @@ def index():
 
     # Renderowanie szablonu z aktualnymi modyfikatorami
     return render_template('index.html', modifiers=modifiers)
-
-if __name__ == '__main__':
-    app.run(debug=True)

@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: quoka_app_prod
+    ports:
+      - "5000:5000"
+
+volumes:
+  pg_data:
