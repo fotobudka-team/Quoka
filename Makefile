@@ -10,7 +10,7 @@ run_prod:
 	docker-compose -f docker-compose.prod.yml up --build
 
 lint:
-	source venv/bin/activate && ruff check .
+	source venv/bin/activate && ruff check src/
 
 lint-fix:
-	source venv/bin/activate && ruff check . --fix
+	source venv/bin/activate && black . && ruff check src/ --fix

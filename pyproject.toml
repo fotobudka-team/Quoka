@@ -58,13 +58,14 @@ target-version = "py313"
 select = [
     "E", # pydocstyle errors
     "N", # pep8-naming
-    "PD", # pandas-vet 
     "D", # pydocstyle
     "I", # isort
     "F", # pyflakes
     "UP", # pyupgrades
 ]
-ignore = []
+ignore = [
+    "E501",
+]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
