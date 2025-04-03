@@ -39,13 +39,13 @@ CRITERIA_MAPPING = {
 }
 
 
-def process_data(CITY):
+def process_data(city):
     results = []
     distances_dict = {}
     for tag, query in CRITERIA_MAPPING.items():
-        city_gdf = get_city_boundary(CITY)
+        city_gdf = get_city_boundary(city)
         hexagons = generate_h3_grid(city_gdf)
-        objects = get_osm_data(CITY, query)
+        objects = get_osm_data(city, query)
         distances = calculate_nearest_distance(hexagons, objects)
         distances_dict[tag] = distances
 
@@ -65,8 +65,8 @@ def process_data(CITY):
     return merged_data, distances_dict
 
 
-def change_scales(merged_data, distances_dict, SCALES):
-    scaled_data = add_scale(merged_data, SCALES)
+def change_scales(merged_data, distances_dict, scales):
+    scaled_data = add_scale(merged_data, scales)
 
     hexagons = scaled_data["h3_index"].tolist()
     distances = {row["h3_index"]: row["scaled"] for _, row in scaled_data.iterrows()}

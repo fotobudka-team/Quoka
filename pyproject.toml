@@ -65,6 +65,8 @@ select = [
 ]
 ignore = [
     "E501",
+    "D100",
+    "D103"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -101,5 +103,5 @@ docstring-code-format = false
 # enabled.
 docstring-code-line-length = "dynamic"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"

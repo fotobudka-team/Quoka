@@ -19,9 +19,7 @@ def calculate_nearest_distance(hexagons, objects):
 
 
 def add_scale(data, scales):
-    """Dodaje skalę do danych, a następnie skaluje wartości 'scaled'
-    na przedział 1-5 przy użyciu podziału kwantylowego (quantize).
-    """
+    """Dodaje skalę do danych, a następnie skaluje wartości 'scaled' na przedział 1-5 przy użyciu podziału kwantylowego (quantize)."""
     data["scaled"] = 0
 
     # Obliczanie wartości skalowanych dla każdej kolumny
