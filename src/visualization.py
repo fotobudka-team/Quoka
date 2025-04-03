@@ -1,7 +1,9 @@
 from geopy.geocoders import Nominatim
 
+
 def city_changed(new_city):
     return new_city != getattr(city_changed, "last_city", None)
+
 
 def get_coordinates(city_name):
     geolocator = Nominatim(user_agent="map-app")

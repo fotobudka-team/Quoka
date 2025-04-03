@@ -1,0 +1,24 @@
+name: CI - Lint
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+
+      - name: Istall Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Istall dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ruff
+
+      - name: Lint code
+        run: ruff check src/
